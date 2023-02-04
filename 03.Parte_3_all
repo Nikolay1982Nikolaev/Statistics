@@ -1,0 +1,841 @@
+
+# DISTRIBUZIONE DI GAUS BIVARIATA
+### 1.Generazione di determianazioni dalla Normale Bivariata
+# mvtnorm::rmvnorm - generare dele realizzazioni da una distrib.bivariata/multivariata Gaussiana
+# Gaussina == normale  N(0,1)
+# input vettore delle medie 
+# input metrice di varianza e covaiznza
+###########
+# Input 1: la numerosita degli elementi da generare
+# input 2: il vet.delle medie
+# input 3: matrice di var e covar : sigma1
+require(mvtnorm)
+library(mvtnorm)
+sigma1 <- matrix(c(3,2,2,3), ncol=2); sigma1
+# generare dalla Normale doppia:
+set.seed(1234)
+n <- 10
+x <- rmvnorm(n,
+             mean=c(0,0),
+             sigma=sigma1)
+x
+
+cov(x)
+
+cor(x)
+
+# n up to 2000
+set.seed(1234)
+n <- 2000
+x <- rmvnorm(n, mean=c(0,0), sigma=sigma1)
+cov(x)
+cor(x)
+require(skimr)
+skim_without_charts(x)
+cov(x)
+cor(x)
+sd(x[,1])
+sd(x[,2])
+### 2.Diagramma a dispersione dei valori ottenuti
+plot(
+    x[,1],
+    x[,2], main = "Realizzazioni da Normale Bivariata N(0,0,3,3,2)"
+    )
+### 3. Curve di livello
+x1 <- x2 <- seq(-10, 10, length = 51)
+dens <- matrix(
+    dmvnorm(expand.grid(x1, x2),
+    sigma = sigma1),
+    ncol = length(x1)
+    )
+
+contour(
+    x1,
+    x2,
+    dens,
+    main = "Livelli della dist. N(0,0,3,3,2)",
+    col="blue",
+    xlab = "x1",
+    ylab = "x2")
+
+
+# ESERCIZIO 31:
+# 1
+require(mvtnorm)
+medie <- c(0, 0)
+varcov <- matrix(c(3, 0, 0, 3), ncol = 2, byrow = TRUE)
+set.seed(14263)
+x <- mvtnorm::rmvnorm(n = 3000, mean = medie, sigma = varcov)
+# 2.
+apply(x, 2, mean)
+cov(x)
+par(mfrow=c(1, 2))
+plot(
+    ecdf(x[, 1]),
+    do.points = FALSE,
+    xlim = c(-8, 8),
+    main = 'Fun. Rip. Emp. prima componente')
+plot(
+    ecdf(x[, 2]),
+    do.points = FALSE,
+    xlim = c(-8, 8),
+    main = 'Funz. Rip. Emp. seconda componente')
+
+# 3
+plot(
+    x[, 1], 
+    x[, 2],
+    col = "orange",
+    asp = 1,
+    main = "Diagramma a dispersione",
+    xlab = "Prima componente",
+    ylab = "Seconda componente")
+# 4.
+z1 <- z2 <- seq(-10, 10, by = 0.1)
+griglia <- expand.grid(z1, z2)
+dens <- matrix(
+    dmvnorm(griglia,
+        mean = medie,
+        sigma = varcov),
+    ncol = length(z1))
+contour(
+    z1, 
+    z2, 
+    dens,
+    asp = 1,
+    #nlevels = 3,
+    #levels = c(0.01, 0.02, 0.04, 0.07),
+    main = "Curve di Livello", 
+    xlab = expression(X[1]), 
+    ylab = expression(X[2]),
+    col = "dodgerblue")
+
+
+# Esercizio 32:
+# 1.
+require(mvtnorm)
+medie <- c(2, 2)
+varcov <- matrix(c(100, 4, 4, 100), ncol = 2)
+set.seed(14263)
+x <- rmvnorm(n = 3000, mean = medie, sigma = varcov)
+# 2.
+mean(x)
+cov(x)
+par(mfrow = c(1, 2))
+plot(
+    ecdf(x[, 1]),
+    do.points = FALSE,
+    main = 'Funz. Rip. Emp. prima componente')
+plot(
+    ecdf(x[, 2]),
+    do.points = FALSE,
+    main = 'Funz. Rip. Emp. seconda componente')
+# 3.
+plot(
+    x[, 1], 
+    x[, 2],
+    col = "green",
+    asp = 1,
+    main = "Diagramma a dispersione",
+    xlab = "Prima componente",
+    ylab = "Seconda componente")
+# 4.
+z1 <- z2 <- seq(-20, 24, by = 0.1)
+griglia <- expand.grid(z1, z2)
+dens <- matrix(
+    dmvnorm(griglia,
+        mean = medie,
+        sigma = varcov),
+    ncol = length(z1))
+contour(
+    z1, 
+    z2, 
+    dens,
+    asp = 1,
+    # nlevels = 3,
+    # levels = c(0.01, 0.02, 0.04, 0.07),
+    main = "Curve di Livello", 
+    xlab = expression(X[1]), 
+    ylab = expression(X[2]),
+    col = "dodgerblue")
+
+# ALGORITMO EXPECTATION-MAXIMIZATION - EM
+# Stima:
+# s1. valore iniziale ai datia mancanti 
+# passo E-expected: calcolano le stime dei parametri utilizzano le soluzioni note 
+# inputaione
+# passo M-maximization: ricalcolando parametri in bnase al imputato
+y <- matrix(c(10,15, 17, 22, 23, NA),2,3,byrow=TRUE)
+y
+
+em1 <- function(y23, y){
+    ystar <- y
+    ystar[2,3] <- y23
+    mu.hat <- mean(ystar)
+    alpha.hat <- apply(ystar, MAR = 1, mean) - mean(ystar)
+    beta.hat <- apply(ystar, MAR = 2, mean) - mean(ystar)
+    y23 <- mu.hat + alpha.hat[2] + beta.hat[3]
+    
+    return(c(
+        mu = mu.hat,
+        alpha = alpha.hat,
+        beta = beta.hat,
+        y23 = y23))
+}
+em1(21,y)
+####
+set.seed(1832)
+em.step <- function(y, epsilon= 1e-8){
+    trace <- NULL
+    convergenza <- FALSE
+    trace <- t(em1(y23 = mean(y, na.rm = TRUE), y = y))
+    y23id <- grep("y23", colnames(trace))
+    h <- 0
+    
+    while(!convergenza){
+        h <- h + 1
+        trace <- rbind(
+            trace,
+            em1(y23 = trace[h, "y23"], y = y))
+        convergenza <- (dist(trace[h:(h+1), -y23id]) < epsilon)
+        }
+
+    return(trace)
+}
+em.step(y)
+### 1. Trace plot
+ris<- em.step(y)
+matplot(ris[,-7], type = "l")
+names1 <- expression(
+    mu,
+    alpha[1],
+    alpha[2],
+    beta[1],
+    beta[2],
+    beta[3])
+pal1<- c("red", "yellow", "green", "violet", "blue", "orange")
+matplot(
+    ris[,-7],
+    type = "l",
+    col = pal1,
+    lwd = 2,
+    lty = 1,
+    xlab = "Iterazioni dell'algoritmo EM",
+    ylab = "Stime dei parametri del modello")
+legend(
+    x = 0,
+    y = 15,
+    legend = names1,
+    lwd = 2 ,
+    col = pal1,
+    lty = 1,
+    horiz=TRUE,
+    cex=0.8)
+###################################################
+# Esercizio: 33
+em1 <- function(y21, y){
+    ystar <- y
+    ystar[2, 1] <- y21
+    # Expectation Step
+    mu.hat <- mean(ystar)
+    alpha.hat <- apply(ystar, MAR = 1, mean) - mean(ystar)
+    beta.hat <- apply(ystar, MAR = 2, mean) - mean(ystar)
+    # Maximization Step
+    y21 <- mu.hat + alpha.hat[2] + beta.hat[1]
+    
+    return(c(
+        mu = mu.hat,
+        alpha = alpha.hat,
+        beta = beta.hat,
+        y21 = y21))
+}
+y <- matrix(c(16, 7, 7, NA, 64, 5), nrow = 2, ncol = 3, byrow = TRUE); y
+em1(19.8, y)
+
+em.step <- function(y, epsilon = 1e-8) {
+    trace <- NULL
+    convergenza <- FALSE
+    trace <- t(em1(y21 = mean(y, na.rm = TRUE), y = y))
+    y21id <- grep("y21", colnames(trace))
+    i <- 0
+    
+    while(!convergenza) {
+        i <- i + 1
+        trace <- rbind(trace, em1(y21 = trace[i, "y21"], y = y))
+        convergenza <- (dist(trace[i:(i+1), -y21id]) < epsilon)
+        }
+    
+    return(trace)
+}
+set.seed(183)
+est <- em.step(y)
+# 2.
+names1 <- expression(mu, alpha[1], alpha[2], beta[1], beta[2], beta[3])
+pal1 <- c("red", "yellow", "green", "violet", "blue", "orange")
+matplot(est[, -7],
+    type = "l",
+    col = pal1,
+    lwd = 2,
+    lty = 1,
+    xlab = "Iterazioni dell'algoritmo EM",
+    ylab = "Stime dei parametri del modello")
+legend(x = 0,
+    y = -5,
+    legend = names1,
+    lwd = 2 ,
+    col = pal1,
+    lty = 1,
+    horiz = TRUE,
+    cex = 0.5)
+# 3.
+em.step <- function(y, maxit = 20) {
+    trace <- NULL
+    maxit_reached <- FALSE
+    trace <- t(em1(y21 = mean(y, na.rm = TRUE), y = y))
+    y21id <- grep("y21", colnames(trace))
+    i <- 0
+    
+    while(!maxit_reached) {
+        i <- i + 1
+        trace <- rbind(trace, em1(y21 = trace[i, "y21"], y = y))
+        maxit_reached <- (i >= (maxit-1))
+        }
+    
+    return(trace)
+}
+est_mod <- em.step(y, maxit = 20)
+
+
+
+##############################################################
+# DENSITA MISCUGLIO DI COMPONENTI GAUSIANE
+funcmxn <- function(x, p, mu, sd){
+    f1 <- dnorm(x, mu[1], sd[1])
+    f2 <- dnorm(x, mu[2], sd[2])
+    f <- p*f1 + (1-p)*f2
+    f
+}
+### Scenario 1:
+mu1 <- c(1,4)
+sd1 <- c(1,1)
+p1 <- 0.4
+funcmxn(0.5,
+    p1,
+    mu1,
+    sd1)
+y1 <- seq(-5,10,0.01)
+length(y1)
+pr1 <- funcmxn(
+    x = y1,
+    p = p1,
+    mu = mu1,
+    sd = sd1)
+require(skimr)
+skim_without_charts(pr1)
+
+plot(
+    y1,
+    pr1,
+    xlab = "y",
+    ylab="Densita'",
+    lwd=3,
+    col="lightsteelblue1",
+    type = "l",
+    main="Miscuglio di N(1,1) e N(4,1) con peso 0.4")
+### Scenario 2:
+mu2 <- c(4,4)
+sd2 <- c(1,8)
+p2 <-0.1
+set.seed(1235)
+funcmxn(
+    0.5,
+    p2,
+    mu2,
+    sd2)
+y2 <- seq(-30,40,0.01)
+pr2 <- funcmxn(
+    x = y2,
+    p = p2,
+    mu = mu2,
+    sd = sd2)
+skim_without_charts(pr2)
+plot(
+    y2,
+    pr2,
+    xlab = "y",
+    ylab="Densità miscuglio",
+    lwd=3,
+    col="orange",
+    type = "l",
+    main="Miscuglio di N(4,1) e N(4,64) con peso 0.1 ")
+### Scenario 3:
+mu3 <- c(0,0)
+sd3 <- c(1,3)
+p3 <-0.5
+funcmxn(
+    0.5,
+    p3,
+    mu3,
+    sd3)
+y3 <- seq(-10,20,0.01)
+pr3 <- funcmxn(
+    x = y3,
+    p = p3,
+    mu = mu3,
+    sd = sd3)
+skim_without_charts(pr3)
+plot(
+    y3,
+    pr3,
+    xlab = "y",
+    ylab="Densità",
+    lwd=3,
+    col="Pink",
+    type = "l",
+    main="Miscuglio di N(0,1) e N(0,9) con peso 0.5"
+)
+
+# Esercizio: 36
+# 1.
+funcmxn <- function(x, p, mu, sd){
+f1 <- dnorm(x, mu[1], sd[1])
+f2 <- dnorm(x, mu[2], sd[2])
+f <- p*f1 + (1-p)*f2
+f
+}
+mu <- c(1, 0)
+sd <- c(sqrt(1.3), sqrt(1.3))
+p <- 0.32
+funcmxn(0.5, p, mu, sd)
+y <- seq(-5, 6, by = 0.01)
+pr <- funcmxn(x = y, p = p, mu = mu, sd = sd)
+plot(y, pr,
+xlab = "y", ylab = "Densità",
+lwd = 3,
+col = "lightsteelblue1",
+type = "l",
+main = "Miscuglio di peso 0.32 tra N(1, 1.3) e N(0, 1.3)")
+abline(v = c(0, 1), lty = c(2, 2), col = c("red", "red"))
+# 2.
+rnormxn <- function(n, w, mu, sd){
+    x = numeric(n)
+    for(i in 1:n){
+        dm = runif(1, 0, 1)
+        if(dm < w)
+            x[i] = rnorm(1, mu[1], sd[1])
+        else
+            x[i] = rnorm(1, mu[2], sd[2])
+    }
+    x
+}
+val <- rnormxn(1000, w = p, mu = mu, sd = sd)
+summary(val)
+var(val)
+# 3.
+hist(
+    val,
+    breaks = 25,
+    ylab = "Frequenze assolute",
+    xlab = "Realizzazioni",
+    main = "Pseudo-det. miscuglio di peso 0.32 e N(1,1.3), N(0,1.3)")
+
+# Esercizio: 37
+# 1.
+mu <- c(0, 1.5)
+sd <- c(sqrt(1), sqrt(0.1))
+p <- 0.75
+y <- seq(-5, 6, by = 0.01)
+pr <- funcmxn(y, p, mu, sd)
+summary(pr)
+# 2.
+plot(
+    y, 
+    pr,
+    xlab = "y", 
+    ylab = "Densità",
+    lwd = 3,
+    col = "lightsteelblue1",
+    type = "l",
+    main = "Miscuglio di peso 0.32 tra N(0, 1) e N(1.5, 0.1)")
+    media_miscuglio <- sum(c(0.75, 0.25) * c(0, 1.5))
+abline(v = c(mu, media_miscuglio), 
+    lty = c(2, 2, 2), 
+    col = c("red", "red", "blue"))
+
+###########################################################################
+# MODELLO MISCUGLIO UNOVARIATO CON DUE COMPONENTI GAUSIANE
+setwd("/home/bceuser/lenkovnn/MS2/")
+load('data/datacol.Rdata')
+dim(datacol)
+head(datacol)
+require(skimr)
+skim_without_charts(datacol)
+
+table(datacol$sex)
+require(dplyr)
+datacol %>% 
+    dplyr::group_by(sex) %>%
+    skim_without_charts()
+# oppure
+# tapply(datacol$cholst, datacol$sex, summary)
+# tapply(datacol$cholst, datacol$sex, sd)
+
+n <-dim(datacol)[1]
+with(
+    datacol,
+    symbols(
+        x=1:n,
+        y=cholst,
+        circles=sex,
+        inches=1/30 ,
+        xlab = "id",
+        ylab = "Colesterolo",
+        bg="red",
+        fg=NULL))
+
+### 1. Stima dei parametri del modello miscuglio
+require('mclust')
+
+### 2. Funzione Mclust
+mod1 <- Mclust(datacol$cholst,
+                G = 2,
+                modelNames = "E")
+summary(mod1)
+summary(mod1,parameters = TRUE)
+### 3. Classificazione delle unita
+head(mod1$z)
+head(apply(mod1$z,1,which.max))
+
+plot(
+    mod1,
+    what='classification', 
+    xlab = "colesterolo")
+class<-mod1$classification
+head(class)
+table(class,datacol$sex)
+### 4. Rappresentazione della densita miscuglio
+plot(
+    mod1,
+    what='density', 
+    xlab = "Colesterolo")
+### 5. Scelta del numero delle componenti
+bayesinf <- mclustBIC(datacol$cholst)
+bayesinf
+plot(bayesinf)
+
+
+
+###########################################################
+# MODELLO MISCUGLIO MULTIVARIATO CON COMPONENTI GAUSSIANE
+load("data/data.Rdata")
+head(data)
+require(skimr)
+skim_without_charts(data)
+cov(data)
+cor(data)
+plot(
+    data$Y1.1, 
+    data$Y2.1, 
+    xlab = "Globuli Bianchi",
+    ylab = "Emoglobina", 
+    col = "orange")
+plot(
+    data$Y2.1, 
+    data$Y1.1,
+    xlab = "Emoglobina", 
+    ylab = "Globuli Bianchi", 
+    col = "blue")
+
+
+### 1. Selezione del numero delle componenti
+require(mclust)
+mcc <-Mclust(data, modelNames = c("EII", "VII"))
+mcc$BIC
+### 2. Stima dei parametri
+mc <-Mclust(
+    data,
+    G = 3,
+    modelNames = c("EII"))
+summary(mc,parameters = TRUE )
+
+plot(
+    mc,
+    "classification", 
+    xlab = "globuli bianchi",
+    ylab = "emoglobina")
+plot(
+    mc,
+    "density", 
+    xlab = "globuli bianchi", 
+    ylab = "emoglobina")
+### 3. Modello misuglio con componenti sferiche e varianze specifiche per ogni componente
+mc1 <-Mclust(
+    data, 
+    G = 3, 
+    modelNames = c( "VII"))
+summary(mc1, parameters = TRUE)
+plot(mc1,"classification")
+### 4. Modello misuglio non sferico
+mc2 <-Mclust(data, G = 3, modelNames = c( "VEE"))
+summary(mc2, parameters = TRUE)
+plot(mc2,"classification")
+
+# BOOTSTRAP PER ERRORI STANDARD E INTERVALLI DI CONFIDENZA
+bootClust <- MclustBootstrap(mc)
+summary(bootClust, what = "se")
+summary(bootClust, what = "ci")
+
+# Esercizio: 38
+load("data/emoglobina.Rdata")
+require(skimr)
+skimr::skim_without_charts(emoglobina)
+plot(
+    ecdf(emoglobina),
+    do.points = FALSE,
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "black")
+curve(
+    pnorm(
+        x, 
+        mean = mean(emoglobina), 
+        sd = sd(emoglobina)),
+    add = TRUE,
+    lty = 2,
+    col = "red")
+legend(
+    2, 
+    0.9, 
+    col = c("black", "red"),
+    c("Emoglobiona", "N(151,82)"),
+    lty = c(1, 2),
+    cex = 0.6)
+#
+plot(
+    emoglobina,
+    xlab = "Id paziente",
+    ylab = "Valori emoglobina")
+q <- quantile(emoglobina, c(0.25,0.75))
+m <- mean(emoglobina)
+abline(
+    h = c(m, q[1], q[2]),
+    col = c("green", "red", "red"))
+legend(
+    "topright",
+    c("media", "Primo e terzo quartile"),
+    col = c("green", "red"),
+    lty = c(1, 1), cex = 0.5)
+# 2.
+library(mclust)
+mcc <- mclust::mclustBIC(emoglobina)
+mcc
+plot(mcc)
+# 3.
+mod1 <- Mclust(
+    emoglobina,
+    G = 2,
+    modelNames = "E")
+summary(mod1)
+summary(mod1, parameters=TRUE)
+# 4.
+plot(mod1, what = 'density')
+abline(v = mod1$parameters$mean, col = rep("red", 2), lty = c(2, 2))
+# 5.
+plot(mod1, what='classification')
+
+# Esercizio: 39
+load("data/datln.Rdata")
+skimr::skim_without_charts(data1)
+plot(
+    ecdf(data1),
+    do.points = FALSE,
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(data1), sd = sd(data1)),
+    add = TRUE,
+    lty = 2,
+    col = "red",
+    lwd = 2)
+legend(2, 0.9,
+    col = c("black", "red"),
+    c("Emoglobiona", "N(59, 447)"),
+    lty = c(1, 2),
+    cex = 0.6)
+# 2.
+mclust::mclustBIC(data1)
+# 3.
+est <- mclust::Mclust(data1, G = 1)
+summary(est, parameters = TRUE)
+
+# Esercizio: 40
+load("data/Dentice.RData")
+summary(SS)
+sd(SS)
+
+plot(
+    ecdf(SS),
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(SS), sd = sd(SS)),
+    lty = 2, 
+    lwd = 2, 
+    col = "red",
+    add = TRUE)
+legend(2, 0.8,
+    col = c("blue", "red"),
+    c("SS", "N(6.2, 3.6)"),
+    lty = c(1, 2),
+    cex = 0.6)
+
+plot(
+    SS,
+    xlab = "Id Dentice",
+    ylab = "Lunghezza dentice")
+q <- quantile(SS, c(0.25, 0.75))
+abline(h = c(mean(SS), q[1], q[2]),
+    col = c("green", "red", "red"))
+legend(
+    0, 12,
+    c("Media", "Primo e terzo quartile"),
+    col = c("green", "red"),
+    lty = c(1,1))
+# 2.
+require("mclust")
+mod_E <- Mclust(SS, G = 2, modelNames = "E")
+summary(mod_E)
+mod_V <- Mclust(SS, G = 2, modelNames = "V")
+summary(mod_V)
+# 3.
+summary(mod_E, parameters=TRUE)
+summary(mod_V, parameters=TRUE)
+# 4.
+ind1 <- which(mod_E$classification == 1)
+ind2 <- which(mod_E$classification == 2)
+summary(SS[ind1])
+summary(SS[ind2])
+
+# Esercizio: 41
+# Esercizio: 42 Bootstrap
+load("data/fluidip.Rdata")
+skimr::skim_without_charts(flu)
+plot(
+    ecdf(flu),
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(flu), sd = sd(flu)),
+    lty = 2, 
+    lwd = 2, 
+    col = "red",
+    add = TRUE)
+legend(2, 0.8,
+    col = c("blue", "red"),
+    c("flu", "N(22.9, 9.8)"),
+    lty = c(1, 2),
+    cex = 0.6)
+ks.test(flu, "pnorm", mean = mean(flu), sd = sd(flu))
+
+# 2.
+mod_flu<- Mclust(flu, G = 2, modelNames = "V")
+summary(mod_flu, parameters = TRUE)
+
+# 3.
+plot(mod_flu, what = "classification")
+
+plot(mod_flu, what = "density")
+abline(v = mod_flu$parameters$mean, col = rep("red", 2), lty = rep(2, 2))
+
+# 4.
+head(round(mod_flu$z, 2))
+tail(round(mod_flu$z, 2))
+
+
+# Esercizio 43
+load("data/gel.Rdata")
+data <- as.data.frame(data)
+skimr::skim_without_charts(data)
+plot(data[, 1], data[, 2])
+
+# 2.
+require(mclust)
+mcc <- mclust::mclustBIC(data, modelNames = c("EII", "VII")); mcc
+plot(mcc)
+
+# 3.
+mc <- Mclust(data, G = 2, modelNames = "EII")
+summary(mc, parameters = TRUE )
+
+# 4.
+plot(mc, what = "classification", asp = 1)
+
+# 5.
+plot(mc, what = "density", asp = 1)
+
+# 6.
+mc_boot <- mclust::MclustBootstrap(mc)
+summary(mc_boot, what = "ci")
+
+# Esercizio 44
+
+
+# MODELLO A CLASSI LENTI
+load("data/psico.Rdata")
+dim(Y)
+head(Y)
+tail(Y)
+n<-dim(Y)[1]
+apply(Y,2,table)/n
+
+require(MultiLCIRT)
+Yout <- aggr_data(Y)
+S <- Yout$data_dis;S
+yv <- Yout$freq; yv
+cbind(S,yv)
+mod2 <- est_multi_poly(S,yv,k=2)
+summary(mod2)
+mod2$np
+mod2 <- est_multi_poly(
+    S,
+    yv,
+    k=2,
+    output = TRUE)
+round(mod2$Pp,2)
+
+
+# Esercizio 45:
+load("data/mobility.Rdata")
+n <- dim(Y)[1]
+apply(Y, 2, table)/n
+# 2.
+require(MultiLCIRT)
+Yout <- aggr_data(Y)
+S <- Yout$data_dis
+yv <- Yout$freq
+cbind(S, yv)
+# 3.
+modlc2 <- est_multi_poly(S, yv, k=2, output = TRUE)
+length(modlc2$lkv)
+modlc2$np
+summary(modlc2)
+# 4.
+round(modlc2$Pp, 2)
+
+# Esercizio C:
+load("data/mate.Rdata")
+n <- dim(mate)[1]
+apply(mate, 2, table)/n
+# 2.
+require(MultiLCIRT)
+mate_mod <- aggr_data(mate)
+S <- mate_mod$data_dis
+yv <- mate_mod$freq
+cbind(S, yv)
+est <- MultiLCIRT::est_multi_poly(S = S, yv = yv, k = 2, output = TRUE)
+summary(est)
+
+# 4.
+round(est$Pp, 2)
