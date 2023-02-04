@@ -1,0 +1,63 @@
+
+
+# BOOTSTRAP PER ERRORI STANDARD E INTERVALLI DI CONFIDENZA
+bootClust <- MclustBootstrap(mc)
+summary(bootClust, what = "se")
+summary(bootClust, what = "ci")
+
+# Esercizio: 38
+load("data/emoglobina.Rdata")
+require(skimr)
+skimr::skim_without_charts(emoglobina)
+plot(
+    ecdf(emoglobina),
+    do.points = FALSE,
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "black")
+curve(
+    pnorm(
+        x, 
+        mean = mean(emoglobina), 
+        sd = sd(emoglobina)),
+    add = TRUE,
+    lty = 2,
+    col = "red")
+legend(
+    2, 
+    0.9, 
+    col = c("black", "red"),
+    c("Emoglobiona", "N(151,82)"),
+    lty = c(1, 2),
+    cex = 0.6)
+#
+plot(
+    emoglobina,
+    xlab = "Id paziente",
+    ylab = "Valori emoglobina")
+q <- quantile(emoglobina, c(0.25,0.75))
+m <- mean(emoglobina)
+abline(
+    h = c(m, q[1], q[2]),
+    col = c("green", "red", "red"))
+legend(
+    "topright",
+    c("media", "Primo e terzo quartile"),
+    col = c("green", "red"),
+    lty = c(1, 1), cex = 0.5)
+# 2.
+library(mclust)
+mcc <- mclust::mclustBIC(emoglobina)
+mcc
+plot(mcc)
+# 3.
+mod1 <- Mclust(
+    emoglobina,
+    G = 2,
+    modelNames = "E")
+summary(mod1)
+summary(mod1, parameters=TRUE)
+# 4.
+plot(mod1, what = 'density')
+abline(v = mod1$parameters$mean, col = rep("red", 2), lty = c(2, 2))
+# 5.
+plot(mod1, what='classification')
