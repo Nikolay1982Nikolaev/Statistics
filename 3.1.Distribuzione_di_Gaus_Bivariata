@@ -1,0 +1,160 @@
+
+# DISTRIBUZIONE DI GAUS BIVARIATA
+### 1.Generazione di determianazioni dalla Normale Bivariata
+# mvtnorm::rmvnorm - generare dele realizzazioni da una distrib.bivariata/multivariata Gaussiana
+# Gaussina == normale  N(0,1)
+# input vettore delle medie 
+# input metrice di varianza e covaiznza
+###########
+# Input 1: la numerosita degli elementi da generare
+# input 2: il vet.delle medie
+# input 3: matrice di var e covar : sigma1
+require(mvtnorm)
+library(mvtnorm)
+sigma1 <- matrix(c(3,2,2,3), ncol=2); sigma1
+# generare dalla Normale doppia:
+set.seed(1234)
+n <- 10
+x <- rmvnorm(n,
+             mean=c(0,0),
+             sigma=sigma1)
+x
+
+cov(x)
+
+cor(x)
+
+# n up to 2000
+set.seed(1234)
+n <- 2000
+x <- rmvnorm(n, mean=c(0,0), sigma=sigma1)
+cov(x)
+cor(x)
+require(skimr)
+skim_without_charts(x)
+cov(x)
+cor(x)
+sd(x[,1])
+sd(x[,2])
+### 2.Diagramma a dispersione dei valori ottenuti
+plot(
+    x[,1],
+    x[,2], main = "Realizzazioni da Normale Bivariata N(0,0,3,3,2)"
+    )
+### 3. Curve di livello
+x1 <- x2 <- seq(-10, 10, length = 51)
+dens <- matrix(
+    dmvnorm(expand.grid(x1, x2),
+    sigma = sigma1),
+    ncol = length(x1)
+    )
+
+contour(
+    x1,
+    x2,
+    dens,
+    main = "Livelli della dist. N(0,0,3,3,2)",
+    col="blue",
+    xlab = "x1",
+    ylab = "x2")
+
+
+# ESERCIZIO 31:
+# 1
+require(mvtnorm)
+medie <- c(0, 0)
+varcov <- matrix(c(3, 0, 0, 3), ncol = 2, byrow = TRUE)
+set.seed(14263)
+x <- mvtnorm::rmvnorm(n = 3000, mean = medie, sigma = varcov)
+# 2.
+apply(x, 2, mean)
+cov(x)
+par(mfrow=c(1, 2))
+plot(
+    ecdf(x[, 1]),
+    do.points = FALSE,
+    xlim = c(-8, 8),
+    main = 'Fun. Rip. Emp. prima componente')
+plot(
+    ecdf(x[, 2]),
+    do.points = FALSE,
+    xlim = c(-8, 8),
+    main = 'Funz. Rip. Emp. seconda componente')
+
+# 3
+plot(
+    x[, 1], 
+    x[, 2],
+    col = "orange",
+    asp = 1,
+    main = "Diagramma a dispersione",
+    xlab = "Prima componente",
+    ylab = "Seconda componente")
+# 4.
+z1 <- z2 <- seq(-10, 10, by = 0.1)
+griglia <- expand.grid(z1, z2)
+dens <- matrix(
+    dmvnorm(griglia,
+        mean = medie,
+        sigma = varcov),
+    ncol = length(z1))
+contour(
+    z1, 
+    z2, 
+    dens,
+    asp = 1,
+    #nlevels = 3,
+    #levels = c(0.01, 0.02, 0.04, 0.07),
+    main = "Curve di Livello", 
+    xlab = expression(X[1]), 
+    ylab = expression(X[2]),
+    col = "dodgerblue")
+
+
+# Esercizio 32:
+# 1.
+require(mvtnorm)
+medie <- c(2, 2)
+varcov <- matrix(c(100, 4, 4, 100), ncol = 2)
+set.seed(14263)
+x <- rmvnorm(n = 3000, mean = medie, sigma = varcov)
+# 2.
+mean(x)
+cov(x)
+par(mfrow = c(1, 2))
+plot(
+    ecdf(x[, 1]),
+    do.points = FALSE,
+    main = 'Funz. Rip. Emp. prima componente')
+plot(
+    ecdf(x[, 2]),
+    do.points = FALSE,
+    main = 'Funz. Rip. Emp. seconda componente')
+# 3.
+plot(
+    x[, 1], 
+    x[, 2],
+    col = "green",
+    asp = 1,
+    main = "Diagramma a dispersione",
+    xlab = "Prima componente",
+    ylab = "Seconda componente")
+# 4.
+z1 <- z2 <- seq(-20, 24, by = 0.1)
+griglia <- expand.grid(z1, z2)
+dens <- matrix(
+    dmvnorm(griglia,
+        mean = medie,
+        sigma = varcov),
+    ncol = length(z1))
+contour(
+    z1, 
+    z2, 
+    dens,
+    asp = 1,
+    # nlevels = 3,
+    # levels = c(0.01, 0.02, 0.04, 0.07),
+    main = "Curve di Livello", 
+    xlab = expression(X[1]), 
+    ylab = expression(X[2]),
+    col = "dodgerblue")
