@@ -1,0 +1,145 @@
+# ALGORITMO EXPECTATION-MAXIMIZATION - EM
+# Stima:
+# s1. valore iniziale ai datia mancanti 
+# passo E-expected: calcolano le stime dei parametri utilizzano le soluzioni note 
+# inputaione
+# passo M-maximization: ricalcolando parametri in bnase al imputato
+y <- matrix(c(10,15, 17, 22, 23, NA),2,3,byrow=TRUE)
+y
+
+em1 <- function(y23, y){
+    ystar <- y
+    ystar[2,3] <- y23
+    mu.hat <- mean(ystar)
+    alpha.hat <- apply(ystar, MAR = 1, mean) - mean(ystar)
+    beta.hat <- apply(ystar, MAR = 2, mean) - mean(ystar)
+    y23 <- mu.hat + alpha.hat[2] + beta.hat[3]
+    
+    return(c(
+        mu = mu.hat,
+        alpha = alpha.hat,
+        beta = beta.hat,
+        y23 = y23))
+}
+em1(21,y)
+####
+set.seed(1832)
+em.step <- function(y, epsilon= 1e-8){
+    trace <- NULL
+    convergenza <- FALSE
+    trace <- t(em1(y23 = mean(y, na.rm = TRUE), y = y))
+    y23id <- grep("y23", colnames(trace))
+    h <- 0
+    
+    while(!convergenza){
+        h <- h + 1
+        trace <- rbind(
+            trace,
+            em1(y23 = trace[h, "y23"], y = y))
+        convergenza <- (dist(trace[h:(h+1), -y23id]) < epsilon)
+        }
+
+    return(trace)
+}
+em.step(y)
+### 1. Trace plot
+ris<- em.step(y)
+matplot(ris[,-7], type = "l")
+names1 <- expression(
+    mu,
+    alpha[1],
+    alpha[2],
+    beta[1],
+    beta[2],
+    beta[3])
+pal1<- c("red", "yellow", "green", "violet", "blue", "orange")
+matplot(
+    ris[,-7],
+    type = "l",
+    col = pal1,
+    lwd = 2,
+    lty = 1,
+    xlab = "Iterazioni dell'algoritmo EM",
+    ylab = "Stime dei parametri del modello")
+legend(
+    x = 0,
+    y = 15,
+    legend = names1,
+    lwd = 2 ,
+    col = pal1,
+    lty = 1,
+    horiz=TRUE,
+    cex=0.8)
+###################################################
+# Esercizio: 33
+em1 <- function(y21, y){
+    ystar <- y
+    ystar[2, 1] <- y21
+    # Expectation Step
+    mu.hat <- mean(ystar)
+    alpha.hat <- apply(ystar, MAR = 1, mean) - mean(ystar)
+    beta.hat <- apply(ystar, MAR = 2, mean) - mean(ystar)
+    # Maximization Step
+    y21 <- mu.hat + alpha.hat[2] + beta.hat[1]
+    
+    return(c(
+        mu = mu.hat,
+        alpha = alpha.hat,
+        beta = beta.hat,
+        y21 = y21))
+}
+y <- matrix(c(16, 7, 7, NA, 64, 5), nrow = 2, ncol = 3, byrow = TRUE); y
+em1(19.8, y)
+
+em.step <- function(y, epsilon = 1e-8) {
+    trace <- NULL
+    convergenza <- FALSE
+    trace <- t(em1(y21 = mean(y, na.rm = TRUE), y = y))
+    y21id <- grep("y21", colnames(trace))
+    i <- 0
+    
+    while(!convergenza) {
+        i <- i + 1
+        trace <- rbind(trace, em1(y21 = trace[i, "y21"], y = y))
+        convergenza <- (dist(trace[i:(i+1), -y21id]) < epsilon)
+        }
+    
+    return(trace)
+}
+set.seed(183)
+est <- em.step(y)
+# 2.
+names1 <- expression(mu, alpha[1], alpha[2], beta[1], beta[2], beta[3])
+pal1 <- c("red", "yellow", "green", "violet", "blue", "orange")
+matplot(est[, -7],
+    type = "l",
+    col = pal1,
+    lwd = 2,
+    lty = 1,
+    xlab = "Iterazioni dell'algoritmo EM",
+    ylab = "Stime dei parametri del modello")
+legend(x = 0,
+    y = -5,
+    legend = names1,
+    lwd = 2 ,
+    col = pal1,
+    lty = 1,
+    horiz = TRUE,
+    cex = 0.5)
+# 3.
+em.step <- function(y, maxit = 20) {
+    trace <- NULL
+    maxit_reached <- FALSE
+    trace <- t(em1(y21 = mean(y, na.rm = TRUE), y = y))
+    y21id <- grep("y21", colnames(trace))
+    i <- 0
+    
+    while(!maxit_reached) {
+        i <- i + 1
+        trace <- rbind(trace, em1(y21 = trace[i, "y21"], y = y))
+        maxit_reached <- (i >= (maxit-1))
+        }
+    
+    return(trace)
+}
+est_mod <- em.step(y, maxit = 20)
