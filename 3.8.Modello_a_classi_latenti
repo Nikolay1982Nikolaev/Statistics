@@ -1,0 +1,60 @@
+
+
+
+# MODELLO A CLASSI LATENTI
+load("data/psico.Rdata")
+dim(Y)
+head(Y)
+tail(Y)
+n<-dim(Y)[1]
+apply(Y,2,table)/n
+
+require(MultiLCIRT)
+Yout <- aggr_data(Y)
+S <- Yout$data_dis;S
+yv <- Yout$freq; yv
+cbind(S,yv)
+mod2 <- est_multi_poly(S,yv,k=2)
+summary(mod2)
+mod2$np
+mod2 <- est_multi_poly(
+    S,
+    yv,
+    k=2,
+    output = TRUE)
+round(mod2$Pp,2)
+
+
+# Esercizio 45:
+load("data/mobility.Rdata")
+n <- dim(Y)[1]
+apply(Y, 2, table)/n
+# 2.
+require(MultiLCIRT)
+Yout <- aggr_data(Y)
+S <- Yout$data_dis
+yv <- Yout$freq
+cbind(S, yv)
+# 3.
+modlc2 <- est_multi_poly(S, yv, k=2, output = TRUE)
+length(modlc2$lkv)
+modlc2$np
+summary(modlc2)
+# 4.
+round(modlc2$Pp, 2)
+
+# Esercizio C:
+load("data/mate.Rdata")
+n <- dim(mate)[1]
+apply(mate, 2, table)/n
+# 2.
+require(MultiLCIRT)
+mate_mod <- aggr_data(mate)
+S <- mate_mod$data_dis
+yv <- mate_mod$freq
+cbind(S, yv)
+est <- MultiLCIRT::est_multi_poly(S = S, yv = yv, k = 2, output = TRUE)
+summary(est)
+
+# 4.
+round(est$Pp, 2)
