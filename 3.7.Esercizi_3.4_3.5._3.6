@@ -1,0 +1,141 @@
+
+
+
+# Esercizio: 39
+load("data/datln.Rdata")
+skimr::skim_without_charts(data1)
+plot(
+    ecdf(data1),
+    do.points = FALSE,
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(data1), sd = sd(data1)),
+    add = TRUE,
+    lty = 2,
+    col = "red",
+    lwd = 2)
+legend(2, 0.9,
+    col = c("black", "red"),
+    c("Emoglobiona", "N(59, 447)"),
+    lty = c(1, 2),
+    cex = 0.6)
+# 2.
+mclust::mclustBIC(data1)
+# 3.
+est <- mclust::Mclust(data1, G = 1)
+summary(est, parameters = TRUE)
+
+# Esercizio: 40
+load("data/Dentice.RData")
+summary(SS)
+sd(SS)
+
+plot(
+    ecdf(SS),
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(SS), sd = sd(SS)),
+    lty = 2, 
+    lwd = 2, 
+    col = "red",
+    add = TRUE)
+legend(2, 0.8,
+    col = c("blue", "red"),
+    c("SS", "N(6.2, 3.6)"),
+    lty = c(1, 2),
+    cex = 0.6)
+
+plot(
+    SS,
+    xlab = "Id Dentice",
+    ylab = "Lunghezza dentice")
+q <- quantile(SS, c(0.25, 0.75))
+abline(h = c(mean(SS), q[1], q[2]),
+    col = c("green", "red", "red"))
+legend(
+    0, 12,
+    c("Media", "Primo e terzo quartile"),
+    col = c("green", "red"),
+    lty = c(1,1))
+# 2.
+require("mclust")
+mod_E <- Mclust(SS, G = 2, modelNames = "E")
+summary(mod_E)
+mod_V <- Mclust(SS, G = 2, modelNames = "V")
+summary(mod_V)
+# 3.
+summary(mod_E, parameters=TRUE)
+summary(mod_V, parameters=TRUE)
+# 4.
+ind1 <- which(mod_E$classification == 1)
+ind2 <- which(mod_E$classification == 2)
+summary(SS[ind1])
+summary(SS[ind2])
+
+# Esercizio: 41
+# Esercizio: 42 Bootstrap
+load("data/fluidip.Rdata")
+skimr::skim_without_charts(flu)
+plot(
+    ecdf(flu),
+    main = "Funzione di ripartizione empirica vs teorica",
+    col = "blue",
+    lwd = 2)
+curve(
+    pnorm(x, mean = mean(flu), sd = sd(flu)),
+    lty = 2, 
+    lwd = 2, 
+    col = "red",
+    add = TRUE)
+legend(2, 0.8,
+    col = c("blue", "red"),
+    c("flu", "N(22.9, 9.8)"),
+    lty = c(1, 2),
+    cex = 0.6)
+ks.test(flu, "pnorm", mean = mean(flu), sd = sd(flu))
+
+# 2.
+mod_flu<- Mclust(flu, G = 2, modelNames = "V")
+summary(mod_flu, parameters = TRUE)
+
+# 3.
+plot(mod_flu, what = "classification")
+
+plot(mod_flu, what = "density")
+abline(v = mod_flu$parameters$mean, col = rep("red", 2), lty = rep(2, 2))
+
+# 4.
+head(round(mod_flu$z, 2))
+tail(round(mod_flu$z, 2))
+
+
+# Esercizio 43
+load("data/gel.Rdata")
+data <- as.data.frame(data)
+skimr::skim_without_charts(data)
+plot(data[, 1], data[, 2])
+
+# 2.
+require(mclust)
+mcc <- mclust::mclustBIC(data, modelNames = c("EII", "VII")); mcc
+plot(mcc)
+
+# 3.
+mc <- Mclust(data, G = 2, modelNames = "EII")
+summary(mc, parameters = TRUE )
+
+# 4.
+plot(mc, what = "classification", asp = 1)
+
+# 5.
+plot(mc, what = "density", asp = 1)
+
+# 6.
+mc_boot <- mclust::MclustBootstrap(mc)
+summary(mc_boot, what = "ci")
+
+# Esercizio 44
