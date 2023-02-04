@@ -1,0 +1,155 @@
+
+##############################################################
+# DENSITA MISCUGLIO DI COMPONENTI GAUSIANE
+funcmxn <- function(x, p, mu, sd){
+    f1 <- dnorm(x, mu[1], sd[1])
+    f2 <- dnorm(x, mu[2], sd[2])
+    f <- p*f1 + (1-p)*f2
+    f
+}
+### Scenario 1:
+mu1 <- c(1,4)
+sd1 <- c(1,1)
+p1 <- 0.4
+funcmxn(0.5,
+    p1,
+    mu1,
+    sd1)
+y1 <- seq(-5,10,0.01)
+length(y1)
+pr1 <- funcmxn(
+    x = y1,
+    p = p1,
+    mu = mu1,
+    sd = sd1)
+require(skimr)
+skim_without_charts(pr1)
+
+plot(
+    y1,
+    pr1,
+    xlab = "y",
+    ylab="Densita'",
+    lwd=3,
+    col="lightsteelblue1",
+    type = "l",
+    main="Miscuglio di N(1,1) e N(4,1) con peso 0.4")
+### Scenario 2:
+mu2 <- c(4,4)
+sd2 <- c(1,8)
+p2 <-0.1
+set.seed(1235)
+funcmxn(
+    0.5,
+    p2,
+    mu2,
+    sd2)
+y2 <- seq(-30,40,0.01)
+pr2 <- funcmxn(
+    x = y2,
+    p = p2,
+    mu = mu2,
+    sd = sd2)
+skim_without_charts(pr2)
+plot(
+    y2,
+    pr2,
+    xlab = "y",
+    ylab="Densità miscuglio",
+    lwd=3,
+    col="orange",
+    type = "l",
+    main="Miscuglio di N(4,1) e N(4,64) con peso 0.1 ")
+### Scenario 3:
+mu3 <- c(0,0)
+sd3 <- c(1,3)
+p3 <-0.5
+funcmxn(
+    0.5,
+    p3,
+    mu3,
+    sd3)
+y3 <- seq(-10,20,0.01)
+pr3 <- funcmxn(
+    x = y3,
+    p = p3,
+    mu = mu3,
+    sd = sd3)
+skim_without_charts(pr3)
+plot(
+    y3,
+    pr3,
+    xlab = "y",
+    ylab="Densità",
+    lwd=3,
+    col="Pink",
+    type = "l",
+    main="Miscuglio di N(0,1) e N(0,9) con peso 0.5"
+)
+
+# Esercizio: 36
+# 1.
+funcmxn <- function(x, p, mu, sd){
+f1 <- dnorm(x, mu[1], sd[1])
+f2 <- dnorm(x, mu[2], sd[2])
+f <- p*f1 + (1-p)*f2
+f
+}
+mu <- c(1, 0)
+sd <- c(sqrt(1.3), sqrt(1.3))
+p <- 0.32
+funcmxn(0.5, p, mu, sd)
+y <- seq(-5, 6, by = 0.01)
+pr <- funcmxn(x = y, p = p, mu = mu, sd = sd)
+plot(y, pr,
+xlab = "y", ylab = "Densità",
+lwd = 3,
+col = "lightsteelblue1",
+type = "l",
+main = "Miscuglio di peso 0.32 tra N(1, 1.3) e N(0, 1.3)")
+abline(v = c(0, 1), lty = c(2, 2), col = c("red", "red"))
+# 2.
+rnormxn <- function(n, w, mu, sd){
+    x = numeric(n)
+    for(i in 1:n){
+        dm = runif(1, 0, 1)
+        if(dm < w)
+            x[i] = rnorm(1, mu[1], sd[1])
+        else
+            x[i] = rnorm(1, mu[2], sd[2])
+    }
+    x
+}
+val <- rnormxn(1000, w = p, mu = mu, sd = sd)
+summary(val)
+var(val)
+# 3.
+hist(
+    val,
+    breaks = 25,
+    ylab = "Frequenze assolute",
+    xlab = "Realizzazioni",
+    main = "Pseudo-det. miscuglio di peso 0.32 e N(1,1.3), N(0,1.3)")
+
+# Esercizio: 37
+# 1.
+mu <- c(0, 1.5)
+sd <- c(sqrt(1), sqrt(0.1))
+p <- 0.75
+y <- seq(-5, 6, by = 0.01)
+pr <- funcmxn(y, p, mu, sd)
+summary(pr)
+# 2.
+plot(
+    y, 
+    pr,
+    xlab = "y", 
+    ylab = "Densità",
+    lwd = 3,
+    col = "lightsteelblue1",
+    type = "l",
+    main = "Miscuglio di peso 0.32 tra N(0, 1) e N(1.5, 0.1)")
+    media_miscuglio <- sum(c(0.75, 0.25) * c(0, 1.5))
+abline(v = c(mu, media_miscuglio), 
+    lty = c(2, 2, 2), 
+    col = c("red", "red", "blue"))
