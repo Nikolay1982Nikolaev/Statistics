@@ -1,0 +1,55 @@
+
+###########################################################
+# MODELLO MISCUGLIO MULTIVARIATO CON COMPONENTI GAUSSIANE
+load("data/data.Rdata")
+head(data)
+require(skimr)
+skim_without_charts(data)
+cov(data)
+cor(data)
+plot(
+    data$Y1.1, 
+    data$Y2.1, 
+    xlab = "Globuli Bianchi",
+    ylab = "Emoglobina", 
+    col = "orange")
+plot(
+    data$Y2.1, 
+    data$Y1.1,
+    xlab = "Emoglobina", 
+    ylab = "Globuli Bianchi", 
+    col = "blue")
+
+
+### 1. Selezione del numero delle componenti
+require(mclust)
+mcc <-Mclust(data, modelNames = c("EII", "VII"))
+mcc$BIC
+### 2. Stima dei parametri
+mc <-Mclust(
+    data,
+    G = 3,
+    modelNames = c("EII"))
+summary(mc,parameters = TRUE )
+
+plot(
+    mc,
+    "classification", 
+    xlab = "globuli bianchi",
+    ylab = "emoglobina")
+plot(
+    mc,
+    "density", 
+    xlab = "globuli bianchi", 
+    ylab = "emoglobina")
+### 3. Modello misuglio con componenti sferiche e varianze specifiche per ogni componente
+mc1 <-Mclust(
+    data, 
+    G = 3, 
+    modelNames = c( "VII"))
+summary(mc1, parameters = TRUE)
+plot(mc1,"classification")
+### 4. Modello misuglio non sferico
+mc2 <-Mclust(data, G = 3, modelNames = c( "VEE"))
+summary(mc2, parameters = TRUE)
+plot(mc2,"classification")
