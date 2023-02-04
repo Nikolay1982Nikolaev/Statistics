@@ -1,0 +1,62 @@
+
+
+###########################################################################
+# MODELLO MISCUGLIO UNOVARIATO CON DUE COMPONENTI GAUSIANE
+setwd("/home/bceuser/lenkovnn/MS2/")
+load('data/datacol.Rdata')
+dim(datacol)
+head(datacol)
+require(skimr)
+skim_without_charts(datacol)
+
+table(datacol$sex)
+require(dplyr)
+datacol %>% 
+    dplyr::group_by(sex) %>%
+    skim_without_charts()
+# oppure
+# tapply(datacol$cholst, datacol$sex, summary)
+# tapply(datacol$cholst, datacol$sex, sd)
+
+n <-dim(datacol)[1]
+with(
+    datacol,
+    symbols(
+        x=1:n,
+        y=cholst,
+        circles=sex,
+        inches=1/30 ,
+        xlab = "id",
+        ylab = "Colesterolo",
+        bg="red",
+        fg=NULL))
+
+### 1. Stima dei parametri del modello miscuglio
+require('mclust')
+
+### 2. Funzione Mclust
+mod1 <- Mclust(datacol$cholst,
+                G = 2,
+                modelNames = "E")
+summary(mod1)
+summary(mod1,parameters = TRUE)
+### 3. Classificazione delle unita
+head(mod1$z)
+head(apply(mod1$z,1,which.max))
+
+plot(
+    mod1,
+    what='classification', 
+    xlab = "colesterolo")
+class<-mod1$classification
+head(class)
+table(class,datacol$sex)
+### 4. Rappresentazione della densita miscuglio
+plot(
+    mod1,
+    what='density', 
+    xlab = "Colesterolo")
+### 5. Scelta del numero delle componenti
+bayesinf <- mclustBIC(datacol$cholst)
+bayesinf
+plot(bayesinf)
