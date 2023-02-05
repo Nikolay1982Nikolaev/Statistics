@@ -1,0 +1,406 @@
+# GENERAZIONE DI DETERMINAZIONI DA VIARIABILI CASUALI
+###  Generazione di pseudo-derminazioni dalla v.c. di Gauss
+rnorm(10,0,1)
+n <- 1000
+set.seed(27732)
+Z <- rnorm(1000)
+mean(Z); sd(Z)
+hist(Z,
+    breaks = 30,
+    freq=FALSE,
+    main="Z = N(0,1)",
+    col ="blue",
+    ylab="Densità",
+    ylim =c(0,0.6))
+rnorm(10,mean = 4, sd = 4 )
+
+
+### Generazione dalla variabile casuale Esponenziale
+x<-seq(0,5,length=101)
+head(x)
+h<-dexp(x,rate = 1)
+head(h)
+plot(x,h,
+    type="l", 
+    col = "blue",
+    lwd = 3, ylim = c(0,2),
+    xlab = "Tempo di sopravvivenza", 
+    ylab = "Densità")
+
+n<-3
+m<-rep(0,1000)
+for(i in 1:1000){
+    m[i]<-mean(rexp(n, rate=1))
+    }
+head(m)
+
+plot(x,h,
+    type="l", 
+    col = "blue",
+    lwd = 3, ylim = c(0,2),
+    xlab = "Tempo di sopravvivenza", 
+    ylab = "Densità")
+hist(m, 
+    prob= T, 
+    add=T, 
+    col = rgb(0,0,1,1/4), 
+    breaks = 25)
+legend(3, 1.5,
+    c("teorica", "realizzazioni n = 3"),
+    col = c("blue", "lightblue"),
+    lty = c(1,1),
+    lwd = c(2,1),
+    cex = 0.6)
+
+### Generazione di pseudo-derminazioni dalla v.c. Beta
+n<-1000
+set.seed(27732)
+alpha <- 1
+beta<- 1
+B <- rbeta(n,alpha,beta)
+summary(B)
+
+hist(B,
+    breaks = 50,
+    freq=FALSE,
+    main="Beta (1,1)",
+    col ="grey",
+    ylab="Densità"
+)
+curve(dbeta(x,1,1),
+    col = "red",
+    add = TRUE )
+
+
+alpha <- 0.5
+beta <- 0.7
+B1 <- rbeta(n,alpha,beta)
+#
+hist(B1,
+    breaks = 50,
+    freq=FALSE,
+    main="Beta (0.5,0.7)",
+    col ="grey",
+    ylab="Densità",
+    ylim=c(0,6)
+)
+#
+curve(dbeta(x,alpha,beta),
+    col = "red",
+    add = TRUE, lwd=2 )
+legend(0.6, 4, 
+    c("realizzazioni n = 1000",
+    "distr. teorica"),
+    col = c("grey", "red"),
+    lty = c(1,1),
+    lwd = c(1,2),
+    cex = 0.4)
+
+
+### Generazione di pseudo-derminazioni dalla v.c. Binomiale
+y= seq(0, 12, 1); y
+dy <- dbinom(y,12,0.2); dy
+plot(y, dy, type="h")
+
+set.seed(123)
+rbinom(1, 8, 0.20)
+rbinom(8, 1, 0.20)
+
+
+### Generazione di pseudo-derminazioni dalla v.c. di Poisson
+y = seq(30, 120, 3)
+plot(y, dpois(y, 80), type='h')
+set.seed(163)
+y <- rpois(100, 22); y
+
+mean(y)
+
+var(y)
+
+
+##########
+# Esercizio 14:
+x <- rexp(1000, rate = 0.4)
+summary(x)
+var(x)
+hist(x, freq = FALSE,
+    xlab = "", 
+    main = "Istogramma dei valori generati da Exp(0.4)",
+    ylim = c(0, 0.3),
+    col = "orange")
+curve(dexp(x, rate = 0.4),
+    lty = 2, 
+    col = "blue", 
+    add = TRUE)
+# 3.
+y <- rexp(1000, rate = 0.25)
+par(mfrow = c(1, 2))
+hist(x, 
+    freq = FALSE,
+    col = "orange",
+    ylim = c(0, 0.35),
+    main = "Exp(0.4)")
+curve(dexp(x, rate = 0.4),
+    col = "blue", 
+    lty = 2,
+    add = TRUE)
+hist(y, 
+    freq = FALSE,
+    col = "orange",
+    ylim = c(0, 0.35),
+    main = "Exp(0.25)")
+curve(dexp(x, rate = 0.25),
+    col = "blue", 
+    lty = 2,
+    add = TRUE)
+# 4.
+plot(ecdf(x),
+    col = "orange",
+    do.points = FALSE,
+    main = "Funzioni di ripartizione empiriche")
+plot(ecdf(y),
+    col = "blue",
+    do.points = FALSE, 
+    add = TRUE)
+legend("bottomright",
+    c("Exp(0.4)", "Exp(0.25)"),
+    col = c("orange", "blue"),
+    lty = c(1, 1))
+abline(v = 5, 
+    col = "green", 
+    lty = "dotted")
+
+
+# Esercizio 15:
+set.seed(1734)
+n <- 1000
+X <- rnorm(n, mean = 175.6, sd = 7.1)
+summary(X)
+sd(X)
+# 2.
+hist(X,
+    main = "Istogramma",
+    freq = FALSE,
+    breaks = 60,
+    xlab = "Altezze",
+    ylab = "Densità")
+abline(v = mean(X), lty = 3, col = "red", lwd = 2)
+curve(dnorm(x, 175.6, 7.1),
+    add = TRUE,
+    col = "blue",
+    lwd = 3)
+legend("topleft",
+    c("Densità N(175.6, 7.1)", "Simulazioni"),
+    col= c("blue", "gray"),
+    lty = c(1, 1),
+    lwd = c(3, 1),
+    cex = 0.5)
+# 3.
+plot(ecdf(X),
+    main = "Funzione di ripartizione",
+    col = "red",
+    lty = 1,
+    lwd = 3,
+    xlab = "Altezze")
+curve(pnorm(x, 175.6, 7.1),
+    add = TRUE,
+    col = "blue",
+    lty = 3,
+    lwd = 3)
+legend(150, 1,
+    c("Pseudo-Determinazioni N(175.6, 50.41)",
+    "Valori teorici di N(175.6, 50.41)"),
+    col = c("red", "blue"),
+    lty = c(1, 3),
+    lwd = c(3, 3),
+    cex = 0.6)
+
+
+# Esercizio 16:
+curve(dgamma(x, shape = 4, rate = 0.7),
+    col = "red",
+    ylim = c(0, 0.37),
+    xlim = c(0, 50),
+    ylab = "Densità",
+    main = "V.C. Gamma")
+curve(dgamma(x, shape = 2, rate = 1),
+    col = "blue",
+    add = TRUE)
+names <- expression(Gamma(alpha = 4, beta = 0.7), Gamma(alpha = 2, beta = 1))
+legend(20, 0.2,
+    legend = names,
+    col = c("red", "blue"),
+    lty = c(1, 1),
+    cex = 0.6)
+# 2.
+n <- 1000
+set.seed(172)
+G <- rgamma(n, shape = 4, rate = 0.7)
+summary(G)
+var(G)
+# 3.
+hist(G,
+    breaks = 60,
+    freq = FALSE,
+    main = "Ist. realiz. v.c Gamma(4,0.7) e funz. teorica",
+    ylab = "Densità")
+curve(dgamma(x, shape = 4, rate = 0.7),
+    col = "blue",
+    add = TRUE)
+
+
+# Esercizio 16.1
+scala <- c(0.5, 1, 2, 3, 4, 5)
+colori <- c("red", "blue", "green", "red", "blue", "green")
+forme <- c(1, 1, 1, 2, 2, 2)
+curve(dgamma(x, shape = 3, scale = scala[1]),
+    col = colori[1],
+    lty = forme[1],
+    lwd = 2,
+    ylim = c(0, 0.55),
+    xlim = c(0, 50),
+    ylab = "Densità",
+    main = "V.C. Gamma")
+for (i in 2:length(scala)) {
+    curve(dgamma(x, shape = 3, scale = scala[i]),
+    col = colori[i],
+    lty = forme[i],
+    lwd = 2,
+    add = TRUE)
+    }
+legend("topright",
+    legend = scala,
+    title = expression(1/ beta),
+    lty = forme,
+    col = colori,
+    lwd = 2)
+
+# Esercizio 16.2
+curve(dbeta(x, shape1 = 0.5, shape2 = 0.5),
+    col = "red",
+    ylim = c(0, 11),
+    ylab = "Densità",
+    lwd = 2)
+curve(dbeta(x, shape1 = 1, shape2 = 1),
+    col = "blue",
+    lwd = 2,
+    add = TRUE)
+curve(dbeta(x, shape1 = 100, shape2 = 100),
+    col = "green",
+    lwd = 2,
+    add = TRUE)
+legend("topright",
+    legend = c(0.5, 1, 100),
+    lty = c(1, 1, 1),
+    col = c("red", "blue", "green"),
+    lwd = 2)
+curve(dbeta(x, shape1 = 5, shape2 = 1),
+    col = "red",
+    ylab = "Densità",
+    lwd = 2)
+
+
+# Esercizio 17:
+set.seed(123)
+prob <- 31/41
+X <- rbinom(1000, size = 41, prob = prob)
+head(X, 3)
+summary(X)
+mean(X)
+41*prob
+var(X)
+1*prob*(1-prob)
+# 2.
+plot(ecdf(X),
+    do.points = FALSE,
+    main = "Funzione di ripartizione pseudo-determinazioni")
+curve(pbinom(x, 41, prob),
+    add = TRUE,
+    col = "red",
+    lty = 3,
+    lwd = 2)
+legend(20, 0.8,
+    c("Teorica Bin(41,0.76)", "Empirica"),
+    col = c("red", "black"),
+    lty = c(3, 1),
+    lwd = c(2, 1),
+    cex = 0.5)
+
+# Esercizio 17.1
+p <- 1/5
+dbinom(10, 10, p)
+dbinom(0, 10, p)
+10*p
+sqrt(10*p*(1-p))
+
+
+
+# Esercizio 17.2
+n <- 1000
+lambda1 <- 5
+lambda2 <- 10
+lambda3 <- 20
+lambda4 <- 30
+set.seed(123)
+p1 <- rpois(n, lambda1)
+set.seed(123)
+p2 <- rpois(n, lambda2)
+set.seed(123)
+p3 <- rpois(n, lambda3)
+set.seed(123)
+p4 <- rpois(n, lambda4)
+P <- data.frame(p1, p2, p3, p4)
+apply(P, 2, summary)
+
+plot(ecdf(P[, 1]),
+    col = "black",
+    xlim = c(0,50),
+    do.points = FALSE,
+    main = "Funzione di ripartizione empirica")
+plot(ecdf(P[, 2]),
+    col = "red",
+    do.points = FALSE,
+    add = TRUE)
+plot(ecdf(P[, 3]),
+    do.points = FALSE,
+    col = "blue",
+    add = TRUE)
+plot(ecdf(P[, 4]),
+    do.points = FALSE,
+    col = "green",
+    add = TRUE)
+names <- expression(
+    Lambda(lambda = 5),
+    Lambda(lambda = 10),
+    Lambda(lambda = 20),
+    Lambda(lambda = 30))
+    legend("bottomright",
+    legend = names,
+    col = c("black", "red", "blue", "green"),
+    lty = c(1, 1, 1, 1),
+    cex = 0.6)
+    
+dpois(x = 20, lambda1)
+dpois(x = 20, lambda2)
+dpois(x = 20, lambda3)
+dpois(x = 20, lambda4)
+table(p4)/1000
+
+
+
+# Esercizio 18:
+Afterlife <- read.table("http://stat4ds.rwth-aachen.de/data/Afterlife.dat",
+header=TRUE)
+
+Afterlife$postlife<-as.factor(Afterlife$postlife)
+Afterlife$religion<-as.factor(Afterlife$religion)
+Afterlife$gender<-as.factor(Afterlife$gender)
+require(skimr)
+skimr::skim_without_charts(Afterlife)
+
+proportions(table(Afterlife$religion, Afterlife$postlife))
+
+proportions(table(Afterlife$postlife)); 
+proportions(table(Afterlife$religion))
+
+proportions(table(Afterlife$religion, Afterlife$postlife), 1)
