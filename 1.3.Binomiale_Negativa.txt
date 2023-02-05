@@ -1,0 +1,368 @@
+
+
+## BINOMIALE NEGATIVA
+Crabs <- read.table("http://stat4ds.rwth-aachen.de/data/Crabs.dat", header=TRUE)
+head(Crabs)
+require(skimr)
+skimr::skim_without_charts(Crabs)
+table(Crabs$sat)
+hist(Crabs$sat, 
+    breaks=c(0:16)-0.5,
+    ylim = c(0,70),
+    col = "pink", ylab = "Frequenze",
+    xlab = "Numero satelliti",
+    main = " ")
+library(MASS)
+stima <- glm.nb(sat ~ weight + factor(color), link=log, data=Crabs)
+summary(stima)
+1/0.9596
+
+
+
+# Analisidella storica dei conteggi COVID
+# Modello autoregressivo di Poisson non omogeneo
+repository <- "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/"
+overall.dataset <- "dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv"
+overall.filename<-paste(repository,overall.dataset,sep="")
+Italy<-read.csv(overall.filename)
+names(Italy)
+library(dplyr)
+dataItaly<- Italy %>%
+    select(data, 
+        dimessi_guariti,
+        isolamento_domiciliare,
+        ricoverati_con_sintomi,
+        terapia_intensiva,deceduti)
+mydate <- as.Date(as.POSIXct(dataItaly$data, format="%Y-%m-%dT %H:%M:%S"))
+df<-data.frame(mydate,dataItaly$isolamento_domiciliare)
+colnames(df)<-c("date", "Isolati")
+df1 <- subset(df, date >= as.Date('2022-08-01') & date <= as.Date('2022-10-20'))
+min(df$date)
+max(df$date)
+require(skimr)
+skimr::skim_without_charts(df1$Isolati)
+n<-length(df1$Isolati)
+ma<-max(df1$Isolati)
+mi<-min(df1$Isolati)
+ytick<-c(mi,409247,ma)
+xtick<-c(1,11, 21, 31, 41, 51, 61, 71, 81)
+plot(df1$Isolati,
+    ylab=expression("Isolamento ("*italic(y[t])*")"),
+    xlab=expression("Giorni ("*italic(t)*")"),
+    yaxt="n",
+    xaxt="n",
+    xlim =c(1,n+5),
+    ylim = c(0,ma+10),
+    lwd = 0.5,
+    lty = 1,col ="black" )
+axis(side=2, at=ytick, labels = FALSE,
+    cex.lab = 0.5, padj = 2,tck=-0.009)
+text(par("usr")[1],
+    ytick,
+    labels = ytick, srt = 45,
+    pos = 2, xpd = TRUE, cex.lab = 0.1)
+axis(side=1, at=xtick,
+    labels = FALSE, cex=0.1,tck=-0.009)
+text(x=xtick,
+    par("usr")[3],
+    labels = xtick,
+    cex.lab = 0.5,
+    pos = 1, xpd = TRUE)
+
+
+regressors1Italy <- cbind(
+    linearTrend=seq(along=df1$Isolati),
+    quadTrend = seq(along=df1$Isolati)^2/100,
+    linlogTrend = log(seq(along=df1$Isolati)))
+head(regressors1Italy)
+
+
+
+options(scipen = 100)
+require(tscount)
+M3Italy <- tsglm(ts=df1$Isolati,
+    link = "log",
+    model=list(past_obs=1),
+    xreg=regressors1Italy,
+    distr = "poisson")
+
+summary(M3Italy)
+
+go <- 5
+TT <- length(df1$date)
+P3Italy <-predict(M3Italy,
+    newxreg = data.frame(linearTrend = ((TT+1):(TT+go)),
+    quadTrend = ((TT+1):(TT+go))^2/100,
+    linlogTrend = log((TT+1):(TT+go))),
+    n.ahead=go,
+    method="bootstrap" )
+
+
+
+pred<-data.frame(cbind(P3Italy$pred,P3Italy$interval))
+colnames(pred)<-c("previsti", "PIinf", "PIsup")
+pred
+
+ytick<-c(mi,409247,ma)
+xtick<-c(1,11, 21, 31, 41, 51, 61, 71, 81)
+plot(df1$Isolati,
+    ylab=expression("Isolamento ("*italic(y[t])*")"),
+    xlab=expression("Giorni ("*italic(t)*")"),
+    yaxt="n",
+    xaxt="n",
+    xlim =c(1,n+5),
+    ylim = c(0,ma),
+    lwd = 0.5,
+    lty = 1,col ="black" )
+abline(v=240, col = "gray")
+axis(side=2, at=ytick, labels = FALSE,
+    cex.lab = 0.5, padj = 2,tck=-0.009)
+text(par("usr")[1],
+    ytick,
+    labels = ytick, srt = 45,
+    pos = 2, xpd = TRUE, cex.lab = 0.1)
+axis(side=1, at=xtick,
+    labels = FALSE, cex=0.1,tck=-0.009)
+text(x=xtick,
+    par("usr")[3],
+    labels = xtick,
+    cex.lab = 0.5,
+    pos = 1, xpd = TRUE)
+lines(c(M3Italy$fitted.values,
+    pred$previsti),
+    lwd=3, col = 3, lty = 4)
+legend("bottomleft",
+    pch = c(20,NA,NA,NA,NA),
+    lty = c(NA,2),
+legend = c("osservati", "interpolati e previsti"),
+    col = c("black", "green"),
+    bty = "n",
+    x.intersp = 0.1,
+    cex= 0.6, pt.cex = .5,
+    xpd = TRUE,
+    text.width = 0.0001)
+
+
+### Modello autoregressivo con distribuzione Binomiale Negativa
+options(scipen = 100)
+require(tscount)
+M4Italy <- tsglm(ts=df1$Isolati,
+    link = "log",
+    model=list(past_obs=1),
+    xreg=regressors1Italy,
+    distr = "nbinom")
+summary(M4Italy)
+
+
+go <- 5
+TT <- length(df1$date)
+P4Italy <-predict(M4Italy,
+    newxreg = data.frame(
+        linearTrend = ((TT+1):(TT+go)),
+        quadTrend = ((TT+1):(TT+go))^2/100,
+        linlogTrend = log((TT+1):(TT+go))),
+        n.ahead=go,
+        method="bootstrap" )
+pred<-cbind(P4Italy$pred,P4Italy$interval)
+colnames(pred)<-c("previsti", "PIinf", "PIsup")
+pred
+
+
+plot(df1$Isolati, 
+    lwd = 0.5,
+    lty = 1,col ="black",
+    xlab = "Giorni",
+    ylab= "Conteggio Isolati",
+    ylim = c(mi,ma+2), xlim = c(0,n+5))
+    abline(v=81, col = "gray")
+lines(c(M4Italy$fitted.values,P4Italy$pred),
+    lwd=2, col = 2, lty = 2)
+    legend("bottomleft",
+    lty = c(1,2),
+    legend = c("osservati", "interpolati e previsti"),
+    col = c("black", "red"),
+    bty = "n",
+    x.intersp = 0.1,
+    cex= 0.6, pt.cex = .5,
+    xpd = TRUE,
+    text.width = 0.0001)
+
+### Valutazione della prevalenza nel tempo
+prev<-c(M4Italy$fitted.values,P4Italy$pred)/60317000
+prev<-prev*1000
+    plot(prev, type = "l",
+    xlab = "Giorni",
+    ylim = c(0,20),
+    lwd=2,
+    col = "blue", 
+    ylab = "(prevalenza isolati)*1000")
+
+
+    
+##############
+# Esercizio 19:
+repository <- "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/"
+overall.dataset <- "dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv"
+overall.filename <- paste(repository, overall.dataset,sep = "")
+Italy <- read.csv(overall.filename)
+df <- Italy[, c(1, 4)]
+df$data <- as.Date(as.POSIXct(df$data, format = "%Y-%m-%dT %H:%M:%S"))
+df <- subset(df, data <= as.Date('2022-10-26'))
+colnames(df) <- c("Data", "Terapia")
+rownames(df) <- 1:nrow(df)
+
+require(skimr)
+skim_without_charts(df)  
+ind_max <- which.max(df$Terapia)
+df[ind_max, ]
+ind_min <- which.min(df$Terapia)
+df[ind_min, ]
+tail(df, 1)
+n <- nrow(df)
+m1 <- min(df$Terapia)
+m2 <- max(df$Terapia)
+ytick <- seq(m1, m2, length.out = 5)
+xtick <- seq(1, n, by = 90)
+plot(df$Terapia,
+    ylab = expression("Terapia Intensiva ("*italic(y[t])*")"),
+    xlab = expression("Giorni ("*italic(t)*")"),
+    yaxt = "n",
+    xaxt = "n",
+    xlim = c(1, n+5),
+    ylim = c(m1-10, m2+10),
+    lwd = 0.5,
+    lty = 1,
+    col = "black")
+axis(side = 2, at = ytick, labels = FALSE,
+    cex.lab = 0.5, padj = 2, tck = -0.009)
+text(par("usr")[1],
+    ytick,
+    labels = ytick, srt = 45,
+    pos = 2, xpd = TRUE, cex.lab = 0.1)
+axis(side = 1, at = xtick,
+    labels = FALSE, cex = 0.1, tck = -0.009)
+text(x = xtick,
+    par("usr")[3],
+    labels = xtick,
+    cex.lab = 0.5,
+    pos = 1, xpd = TRUE)
+
+
+Regressors <- cbind(
+    linearTrend = seq(along = df$Terapia),
+    quadTrend = seq(along = df$Terapia)^2/100,
+    linlogTrend = log(seq(along = df$Terapia)))
+
+
+options(scipen = 100)
+require(tscount)
+M3Italy <- tsglm(ts = df$Terapia,
+    link = "log",
+    model = list(past_obs=1),
+    xreg = Regressors,
+    distr = "poisson")
+summary(M3Italy)
+
+
+A <- cbind(df$Terapia, M3Italy$fitted.values)
+colnames(A) <- c("Osservati", "Interpolati")
+A <- data.frame(A)
+head(A)
+tail(A)
+
+# 3.
+go <- 5
+TT <- length(df$Data)
+newRegressors <- data.frame(
+    linearTrend = ((TT+1):(TT+go)),
+    quadTrend = ((TT+1):(TT+go))^2/100,
+    linlogTrend = log((TT+1):(TT+go)))
+P3Italy <- predict(M3Italy,
+    newxreg = newRegressors,
+    n.ahead = go,
+    method = "bootstrap")
+pred <- cbind(
+    P3Italy$pred, 
+    P3Italy$interval,
+    P3Italy$interval[, 2] - P3Italy$interval[, 1])
+colnames(pred) <- c("Stime puntuali", "PIinf", "PIsup", "Ampiezza")
+rownames(pred) <- format(df$Data[TT] + (1:go), "%d %b")
+pred <- data.frame(pred)
+pred
+
+
+ytick <- seq(m1, m2, length.out = 5)
+xtick <- seq(1, n, by = 90)
+plot(df$Terapia,
+    ylab = expression("Terapia intensiva ("*italic(y[t])*")"),
+    xlab = expression("Giorni ("*italic(t)*")"),
+    yaxt = "n",
+    xaxt = "n",
+    xlim = c(1, n+5),
+    ylim = c(m1-10, m2+10),
+    lwd = 0.5,
+    lty = 1,
+    col ="black" )
+axis(side=2, at=ytick, labels = FALSE,
+    cex.lab = 0.5, padj = 2,tck=-0.009)
+text(par("usr")[1],
+    ytick,
+    labels = ytick, srt = 45,
+    pos = 2, xpd = TRUE, cex.lab = 0.1)
+axis(side=1, at=xtick,
+    labels = FALSE, cex=0.1,tck=-0.009)
+text(x=xtick,
+    par("usr")[3],
+    labels = xtick,
+    cex.lab = 0.5,
+    pos = 1, xpd = TRUE)
+lines(c(M3Italy$fitted.values, P3Italy$pred),
+    lwd = 1, col = 2, lty = 2)
+
+legend(x = 750, y = m2,
+    pch = c(20, NA),
+    lty = c(NA, 2),
+    legend = c("Valori osservati", "Valori interpolati e previsti"),
+    col = c("black", "red"),
+    bty = "n",
+    x.intersp = 0.1,
+    cex = 0.6, pt.cex = .5,
+    xpd = TRUE,
+    text.width = 0.0001)
+
+
+
+# Esercizio 21:
+repository <- "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/"
+overall.dataset <- "dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv"
+overall.filename <- paste(repository, overall.dataset,sep = "")
+Italy <- read.csv(overall.filename)
+df <- Italy[, c(1, 4)]
+df$data <- as.Date(as.POSIXct(df$data, format = "%Y-%m-%dT %H:%M:%S"))
+df <- subset(df, data <= as.Date('2022-10-26'))
+colnames(df) <- c("Data", "Terapia")
+rownames(df) <- 1:nrow(df)
+
+options(scipen = 100)
+require(tscount)
+Regressors <- cbind(linearTrend = seq(along = df$Terapia),
+quadTrend = seq(along = df$Terapia)^2/100,
+linlogTrend = log(seq(along = df$Terapia)))
+M4Italy <- tsglm(ts = df$Terapia,
+    link = "log",
+    model = list(past_obs = 1),
+    xreg = Regressors,
+    distr = "nbinom")
+summary(M4Italy)
+
+pop_Ita <- 60317000
+prev <- M4Italy$fitted.values/pop_Ita
+prev <- prev*1000
+
+plot(prev, type = "l",
+    xlab = "Giorni",
+    lwd = 2,
+    col = "blue", 
+    ylab = "(Prevalenza terapia intensiva)*1000")
+
+
