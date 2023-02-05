@@ -1,0 +1,375 @@
+
+# GENERATORE LINEARE DI NUMERI PSEUDO-CASUALI
+### Metodo Congruenziale lineare
+# Primo numero
+a <- 65537
+m <-34359738368
+xini <- 47838
+c <- 5
+(a*xini + c)%%m
+x1 <- (a*xini+c)%%m
+x1/m
+# Secondo numero
+(a*x1 + c)%%m
+x2 <- (a*x1+ c)%%m
+x2/m
+# Costruitto ioterativo
+n <- 1857
+random.n <- numeric(n)
+for(j in 1:n){
+    x1 <- (a*x1+c)%%m
+    random.n[j] <- x1/m
+    }
+head(random.n)
+tail(random.n)
+
+
+### Valutazione della pseudo-casualita delle serie
+# 1. Stat.Descritive
+require(skimr)
+skim_without_charts(random.n)
+var(random.n)
+# Test grafici
+### a. Diagramma a dispersione
+plot(
+    random.n[1:1856],
+    random.n[2:1857],
+    main="Grafico (1,n-1)*(2,n)",
+    ylab = "valori generati con metodo congruenziale")
+
+# b. Istogramma
+hist(
+    random.n, 
+    col = 'purple',
+    breaks = 20,
+    freq=FALSE,
+    ylim =c(0,1.5),
+    main='Istogramma',
+    xlab='numeri pseudo-casuali',
+    ylab='Densità di frequenza'
+    )
+abline(v=mean(random.n),
+    col='purple',
+    lwd=2,lty=2
+    )
+text(0.7,1.3,
+    c("valore medio"),
+    col="blue"
+    )
+
+### c.Funzione di ripartizione empirica
+plot(ecdf(random.n),
+    do.points=FALSE,
+    main ='Funzione di ripartizione empirica vs teorica'
+    )
+curve(punif(x,0,1),
+    lty='dashed',
+    col='red',
+    lwd='3',
+    add=TRUE
+        )
+legend(0.8,
+    0.4,
+    col=c("black","red"),
+    c("f.r. empirica","f.r. teorica"),
+    lty=c(1,2),
+    cex=0.7)
+
+### Test di Kolmogorov Smirnov
+ks.test(random.n, "punif")
+
+### Test Chi Quadrato
+n <- length(random.n)
+int<-seq(0,1,by=0.1); int
+foss<-table(cut(random.n, int))/n; foss
+
+p<- rep(0.1,10); p
+chisq.test(foss,p=p)
+qchisq(0.95,df=9)
+
+n <- length(random.n)
+int<-seq(0,1,by=0.1); int
+
+fossN<-table(cut(random.n, int)); fossN
+
+chisq.test(fossN)
+
+### Fumzione di autocorrelazione empirica
+acf(random.n,
+    main = " funzione di autocorrelazione")
+
+n<-length(random.n)
+acf(random.n, 
+    main = " funzione di autocorrelazione", 
+    lag.max =n)
+######################################################
+# Funzione runif
+set.seed(3882)
+n <- 2000
+rand <- runif(n, min=0, max=1)
+head(rand)
+# diagramma a dispersione
+plot(rand[1:(n-1)],
+     rand[2:n],
+     main="Grafico (1,n-1)*(2:n)",
+     ylab = "valori generati con funzione runif")
+plot(ecdf(rand),
+    do.points=FALSE,
+    main ='funzione di ripartizione empirica vs teorica'
+    )
+curve(punif(x,0,1),
+    lty='dashed',
+    col='red',
+    lwd='3',
+    add=TRUE
+    )
+legend(0.6,0.3,
+    col=c("black","red"),
+    c("f.r. empirica","f.r. teorica"),
+    lty=c(1,2),
+    cex=0.6)
+# Istogramma
+hist(rand, 
+    col = 'yellow',
+    breaks = 20,
+    freq=FALSE,
+    ylim =c(0,1.5),
+    main='Istogramma',
+    xlab='numeri pseudo-casuali (runif)',
+    ylab='Densità di frequenza'
+    )
+abline(v=mean(random.n),
+    col='purple',
+    lwd=2,lty=2
+    )
+text(0.7,1.3,
+    c("valore medio"),
+    col="blue")
+# Test Statistici
+### Kolmogorov Smirnov
+ks.test(rand, "punif")
+### Chi Quadratto
+foss<-table(cut(rand, int))/n; foss
+chisq.test(foss,p=p)
+#### Autocorelazione
+acf(rand,
+    main = " funzione di autocorrelazione")
+acf(rand, lag.max = n,
+    main = " funzione di autocorrelazione")
+
+##############
+# Esercizio 8:
+gen <- function(a, c, m, x1, niter) {
+    x <- numeric(length = niter)
+    for (i in 1:niter) {
+        x1 <- (a*x1 + c) %% m
+        x[i] <- x1 / m
+        }
+    return(x)
+    }
+gen(a = 26, c = 5, m = 106, x1 = 36, niter = 10)
+x <- gen(a = 26, c = 5, m = 106, x1 = 36, niter = 500)
+plot(x)
+length(unique(x))
+
+x <- gen(a = 25, c = 5, m = 2^32, x1 = 36, niter = 500)
+length(unique(x))
+
+# Esercizio 9:
+a1 <- 0
+b1 <- 1
+set.seed(163)
+ran1 <- runif(1000, a1, b1)
+a2 <- 2
+b2 <- 3
+set.seed(163)
+ran2 <- runif(1000, a2, b2)
+
+mean(ran1)
+var(ran1)
+mean(ran2)
+var(ran2)
+
+par(mfrow=c(1, 2))
+hist(ran1, 
+    col = "goldenrod4",
+    breaks = 50,
+    freq = FALSE,
+    ylim = c(0, 1.2),
+    main = "Istogramma",
+    xlab = "Generazioni pseudo-casuali da U(0,1)",
+    ylab = "Densità")
+#aaaa
+hist(ran2, 
+    col = "red",
+    breaks = 50,
+    freq = FALSE,
+    ylim = c(0,1.2),
+    main = "",
+    xlab = "Generazioni pseudo-casuali da U(2,3)",
+    ylab = "Densità")
+
+par(mfrow=c(1,2))
+acf(ran1,
+    main = "Autocorrelazione di U(0,1)")
+acf(ran2,
+    main = "Autocorrelazione di U(2,3)")
+
+
+par(mfrow=c(1,2))
+acf(ran1,
+    lag.max = 1000,
+    main = "Autocorrelazione di U(0,1) - lag.max = n")
+acf(ran2,
+    lag.max = 1000,
+    main = "Autocorrelazione di U(2,3) - lag.max = n ")
+
+# Esercizio 10:
+rand1 <- read.csv("data/rand1.csv", header = FALSE)
+require(skimr)
+skim_without_charts(rand1)
+ind <- which(rand1$V1 > 0.3 & rand1$V1 < 0.7)
+length(ind)/100
+# test grafici
+plot(
+    rand1$V1[1:99],
+    rand1$V1[2:100],
+    main = "Diagramma a dispersione nel piano (1, 99) x (2:100)",
+    xlab = "x[1:99]", ylab = "x[2:100")
+plot(ecdf(rand1$V1),
+    do.points=FALSE,
+    main = 'Funzioni di ripartizione empirica vs teorica')
+curve(punif(x, 0, 1),
+    lty = 'dashed',
+    col = 'red',
+    lwd = 3,
+    add = TRUE)
+legend(0.6, 0.3,
+    col = c("black","red"),
+    c("F.R. empirica", "F.R. teorica"),
+    lty = c(1, 2),
+    cex = 0.6)
+hist(rand1$V1, col = 'orange',
+    breaks = 20,
+    freq = FALSE,
+    ylim = c(0, 2),
+    main = 'Istogramma',
+    xlab = 'Generazioni pseudo-casuali',
+    ylab = 'Densità di frequenza')
+abline(v=mean(rand1$V1),
+    col = 'blue',
+    lwd=2, lty=2)
+text(0.7, 1.3,
+    c("Valore medio"),
+    col = "blue")
+par(mfrow = c(1, 2))
+acf(rand1$V1, main = " Fun. di autocorrelazione")
+acf(rand1$V1, main = " Fun. di autocorrelazione", lag.max = length(rand1$V1))
+# test statistici
+ks.test(rand1$V1, "punif")
+foss <- table(cut(rand1$V1, seq(0, 1, by = 0.1)))
+foss
+p <- rep(0.1, 10)
+chisq.test(foss, p = p)
+qchisq(0.95, df = 9)
+
+
+
+# Esercizio 11
+data(lh, package = "datasets")
+lh <- as.numeric(lh)
+head(lh)
+skim_without_charts(lh)
+
+plot(lh,
+    xlab = "Periodo temporale",
+    main = "Ormone luteinizzante")
+abline(h = mean(lh), col = "red")
+legend(0.6, 0.3,
+    col = c("black", "red"),
+    c("F.R. empirica", "F.R. teorica"),
+    lty = c(1, 2),
+    cex = 0.6)
+
+
+
+n <- length(lh)
+par(mfrow = c(1, 3))
+acf(lh, main = "ACF") 
+acf(lh, lag.max = 1, main = "ACF - lag.max = n/2")
+acf(lh, lag.max = n, main = "ACF - lag.max = n")
+
+plot(ecdf(lh),
+    do.points = FALSE,
+    main = 'Funzione di ripartizione empirica di lh')
+    lm <- mean(lh)
+ls <- sd(lh)
+curve(pnorm(x, mean = lm, sd = ls),
+    lty = 'dashed',
+    col = 'red',
+    add = TRUE)
+legend(2.5, 0.3,
+    col = c("black", "red"),
+    c("F.R. empirica", "F.R. teorica"),
+    lty = c(1, 2),
+    cex = 0.6)
+
+ks.test(lh,
+    "pnorm",
+    lm,
+    ls, exact = FALSE)
+
+table(lh)
+
+
+
+# Esercizio 13:
+load("data/dataeNo.Rdata")
+head(dataeNo)
+require(skimr)
+skim_without_charts(dataeNo[,2:4])
+plot(
+    dataeNo[,2],
+    type = "p",
+    main = "Prima, 5 min. dopo, 20 min. dopo",
+    ylim=c(0,150),
+    ylab = "Costrizione dei bronchi")
+par(new=TRUE)
+plot(dataeNo[,3],
+    type="p",
+    col="blue",
+    main=" ",
+    ylim=c(0,150),
+    ylab = "")
+par(new=TRUE)
+plot(dataeNo[,4],
+    type="p",
+    col="red",
+    main=" ",
+    ylim=c(0,150),
+    ylab = "")
+legend("topright",
+    col=c("black","blue", "red"),
+    c("prima","5m dopo", "20m dopo"),
+    lty=c(1,1,1),
+    cex=0.7)
+apply(dataeNo[, 2:4], 2, IQR)
+
+plot(ecdf(dataeNo[, 2]),
+    col = "black",
+    do.points = FALSE,
+    main = "Funz. ripartizione empiriche asma")
+plot(ecdf(dataeNo[, 3]),
+    col = "red",
+    do.points = FALSE,
+    add = TRUE)
+plot(ecdf(dataeNo[, 4]),
+    col = "blue",
+    do.points = FALSE,
+    add = TRUE)
+legend("bottomright",
+    col = c("black", "red", "blue"),
+    c("Prima", "5 min. dopo", "20 min. dopo"),
+    lty = c(1, 1, 1),
+    cex = 0.6)
+abline(v = 60, lty = "dotted", col = "green")
