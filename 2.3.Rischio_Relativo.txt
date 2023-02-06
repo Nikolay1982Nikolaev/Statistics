@@ -1,0 +1,161 @@
+
+
+# Stimatore del rischio relativo: intervalli di confidenza bootstrap
+X <- rep(c("aspirina","placebo"), c(11037,11034))
+head(X)
+table(X)
+Y = rep(c("NO", "SI", "SI", "NO"),
+        c(11037-104, 104, 189,11034-189))
+head(Y)
+table(Y)
+
+dataR <- data.frame(X,Y)
+head(dataR)
+table(dataR)
+
+
+CC <- prop.table(table(dataR),1); CC
+
+RR <- CC[4]/CC[3]; RR
+
+B <- 2000
+RRB <- rep(0,B)
+n <- dim(dataR)[1]
+set.seed(1023)
+for(i in 1:B){
+    ind <-sample(1:n,
+    size = n,
+    replace = TRUE)
+    datB <- dataR[ind,]
+    CC <- prop.table(table(datB),1)
+    RR <- CC[4]/CC[3]
+    RRB[i]<-RR
+}
+head(RRB)
+
+summary(RRB)
+
+sd(RRB)
+
+
+sB<- mean(RRB)
+hist(RRB,
+    breaks = 60,
+    freq=FALSE,
+    main = "Dist. boot. Rischio Relativo",
+    xlab = "2000 realizzazioni bootstrap",
+    ylim = c(0,2.5),
+    col = "gray",
+    ylab = " Densità",
+    xlim = c(1, 3))
+######### Metodo del percentile
+Q <- quantile(RRB, c(0.025,0.975)); Q
+Tm <- mean(RRB); Tm
+
+hist(RRB,
+    main = "Distr. Boot. per il rischio Relativo",
+    breaks=60,
+    freq=FALSE,
+    ylab="Densità",
+    xlab="2000 Realizzazioni bootstrap")
+abline(v=c(RR, Tm, Q[1], Q[2]),
+    col=c("red","blue", "violet","violet"))
+legend(2.5, 1.5,
+    c("mediaOR","mediaB", "conf.int1", "conf.int2"),
+    col=c("red","blue", "violet", "violet"),
+    lty=c(1,1,1,1),
+    cex=0.7)
+########## 2. Metodo Bca
+thetaR <- function(ind){
+    datB <- dataR[ind,]
+    CC <- prop.table(table(datB),1)
+    CC[4]/CC[3]
+    }
+require(bootstrap)
+set.seed(1023)
+CIBca <- bcanon(1:n,
+    B,
+    thetaR,
+    alpha=c(0.025,0.975))
+CIBca$confpoints
+CIBca$acc
+CIBca$z0
+
+Tm <- mean(RRB); Tm
+#> [1] 1.835642
+hist(RRB,
+    main = "Distr. Boot. per il Rischio Relativo",
+    breaks=60,
+    freq=FALSE,
+    ylab="Densità",
+    xlab="2000 Realizzazioni bootstrap")
+abline(v=c(RR, Tm, Q[1], Q[2],
+    CIBca[["confpoints"]][3],
+    CIBca[["confpoints"]][4]),
+    col=c("red","blue", "violet","violet", "green", "green"))
+legend(2.5, 1.8,
+    c("mediaOR",
+    "mediaB",
+    "c.i1 p.",
+    "c.i2 p.",
+    "c.i1 bca",
+    "c.i2 bca"),
+    col=c("red","blue", "violet", "violet", "green", "green"),
+    lty=c(1,1,1,1),
+    cex=0.5)
+
+
+
+# Esercizio 23:
+load("data/cranio1.RData")
+skimr::skim_without_charts(cranio1)
+plot(cranio1, type = "p")
+hist(cranio1, breaks = 60)
+ind <- which.max(cranio1)
+plot(ecdf(cranio1),
+    do.points=FALSE,
+    main ='Funzioni di ripartizione')
+curve(pnorm(x, 37, sd(cranio1)),
+    lty = 'dashed',
+    col = 'red',
+    add = TRUE)
+legend(60, 0.4,
+    c("Empirica", "Teorica N(37,36)"),
+    col = c("black", "red"),
+    lty = c(1, 3),
+    lwd = c(2, 1),
+    cex = 0.5)
+# 2.
+require(bootstrap)
+set.seed(153)
+b.boot <- bootstrap::bootstrap(cranio1, 2000, mean)
+summary(b.boot$thetastar)
+sd(b.boot$thetastar)
+# 3.
+temp <- range(b.boot$thetastar)
+hist(b.boot$thetasta,
+    breaks = 50,
+    freq = FALSE,
+    main = "Distribuzione bootstrap per la media del cranio",
+    xlab = "2000 realizzazioni bootstrap",
+# xlim = temp,
+# ylim = c(0,0.7),
+    col = "gray",
+    ylab = "Densità")
+abline(v = mean(cranio1), col = "red")
+abline(v = mean(b.boot$thetastar), col = "blue")
+legend("topright",
+    c("Valore sul campione", "Valore bootstrap"),
+    col = c("red", "blue"),
+    lty = c(1, 1),
+    cex = 0.5)
+
+# 4.
+dif <- b.boot$thetastar - mean(cranio1)
+hist(dif,
+    breaks = 50,
+    freq = FALSE,
+    main = "Distribuzione bootstrap errore di stima",
+    xlab = "2000 realizzazioni bootstrap",
+    col = "orange",
+    ylab = "Densità")
