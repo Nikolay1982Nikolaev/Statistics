@@ -1,0 +1,107 @@
+
+# BOOTSTRAP
+getwd()
+setwd("/home/bceuser/lenkovnn/MS2/")
+nervo<-read.table("data/nervo.dat", header = TRUE)
+head(nervo$A)
+
+require(skimr)
+skim_without_charts(nervo)
+
+boxplot(nervo$A, xlab="Pulsazioni", horizontal=TRUE, col = "brown")
+
+hist(nervo$A,
+    breaks = 50,
+    ylim=c(0,5),
+    main = "Pulsazioni fibra del nervo",
+    ylab="Densità",
+    freq =FALSE,
+    col = "grey")
+
+rateA <- 1/mean(nervo$A); rateA
+
+x<-seq(0,1.4,length=799)
+h<-dexp(x,rate = rateA)
+
+plot(x,h,
+    ylim=c(0,5),
+    type="l", col = "blue",
+    lwd = 3,
+    xlab = "pulsazioni",
+    ylab = "densità")
+hist(nervo$A,
+    breaks = 50,
+    col = rgb(0,0,1,1/4),
+    freq =FALSE, add=T)
+legend(0.8,3, c("teorica", "campione"),
+    col = c("blue", "lightblue"),
+    lty = c(1,1),
+    lwd = c(2,1),
+    cex = 0.6)
+
+plot(ecdf(nervo$A),
+    col="lightblue",
+    main= "funz. di ripartizione emp. pulsazioni")
+
+
+plot(ecdf(nervo$A),
+    col="lightblue",
+    main= "Funz. di ripartizione")
+#
+curve(pexp(x,rate=rateA),
+    lty='dashed',
+    col='red',
+    lwd='3',
+    add=TRUE)
+#
+legend(0.8,0.4, col=c("lightblue","red"),
+    c("f.r. empirica","f.r. teorica"), lty=c(1,2),
+    cex=0.7)
+# Indice di asimmetria
+require(e1071)
+skewness(nervo$A)
+
+# Bootstrap
+# Passo 1:
+# promo campione
+n <- length(nervo$A)
+B1 <- sample(nervo$A, n, replace = TRUE)
+summary(B1)
+#skim_without_charts(B1)
+# secondo campione
+B2 <- sample(nervo$A, n, replace = TRUE)
+summary(B2)
+# terzo campione
+B3 <- sample(nervo$A, n, replace = TRUE)
+summary(B3)
+
+summary(B1)
+summary(B2)
+summary(B3)
+# Passo 2:
+s1<-skewness(B1)
+s2<-skewness(B2)
+s3<-skewness(B3)
+s <- c(s1,s2,s3); s
+# oppyre
+BB<-cbind(B1,B2,B3)
+apply(BB,2,skewness)
+
+# Passo 3: dev st
+sd(s)
+
+# Utilizzo del ciclo for
+B <- 1000
+n <- length(nervo$A)
+Tboot <- rep(0, B)
+set.seed(16253)
+for (i in 1:B) {
+    Xstar <- sample(
+        nervo$A, 
+        n,
+        replace = TRUE)
+    Tboot[i] <- e1071::skewness(Xstar)
+}
+head(Tboot)
+summary(Tboot)
+seTboot <- sd(Tboot); seTboot
