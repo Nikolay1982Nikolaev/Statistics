@@ -1,0 +1,113 @@
+
+# INTERVALLI DI CONFIDENZA BOOTSTRAPP
+# Metodo del percentile
+nervo<-read.table("data/nervo.dat", header = TRUE)
+B <- 1000
+n <- length(nervo$A)
+Tboot <- rep(0, B)
+for (i in 1:B) {
+    Xstar <- sample(nervo$A,
+        n,
+        replace = TRUE)
+    Tboot[i] <- e1071::skewness(Xstar)
+}
+sk <- e1071::skewness(nervo$A)
+hist(Tboot,
+    breaks=50,
+    freq=FALSE,
+    main = "Distribuzione con 1000 realizzazioni bootstrap",
+    xlab = "Indice di asimmetria",
+    ylim = c(0,4),
+    col= "gray",
+    ylab = "Densità",
+    xlim = c(1,2.5))
+abline(v= sk, col = "red")
+legend("topleft", 2,
+    c("valore sul campione"),
+    col = "red",
+    lty= 1,
+    cex = 0.8)
+
+
+
+sB<- mean(Tboot)
+Q <- quantile(Tboot, c(0.025, 0.975))
+Q[1]; Q[2]
+
+hist(Tboot,
+    breaks = 60,
+    freq=FALSE,
+    main = "Distribuzione con 1000 realizzazioni bootstrap",
+    xlab = "Indice di asimmetria",
+    ylim = c(0,4),
+    col = "gray",
+    ylab = " Densità",
+    xlim = c(1, 3))
+#
+abline( v = c(sk,sB,Q[1], Q[2]),
+    col = c("red", "blue", "green", "green"))
+#
+legend(2.5,2.5,
+    c("valore or", "media boot",
+    "conf. int1", "conf. int2"),
+    col = c("red", "blue", "green", "green"),
+    lty = c(1,1,1,1),
+    lwd = c(3,3,3,3),
+    cex = 0.7)
+
+# Metodo Bias Corrected Accelerated Bootstrap
+n
+B <- 1000
+theta <- e1071::skewness
+require(bootstrap)
+set.seed(1013)
+
+CIbca <- bcanon(nervo$A, B,
+    theta,
+    alpha = c(0.025, 0.975))
+
+CIbca$confpoints
+
+CIbca$acc
+
+CIbca$z0
+
+hist(Tboot,
+    breaks = 60,
+    freq=FALSE,
+    main = "Distribuzione bootstrap con 1000 realizzazioni bootstrap",
+    xlab = "Indice di asimmetria",
+    ylim = c(0,4),
+    col = "gray",
+    ylab = " Densità",
+    xlim = c(1, 3))
+#
+abline( v = c(sk,
+    sB,
+    Q[1],
+    Q[2],
+    CIbca[["confpoints"]][3],
+    CIbca[["confpoints"]][4]),
+    col = c("red",
+        "blue",
+        "green",
+        "green",
+        "pink",
+        "pink"))
+legend(2.6,2.5,
+    c("valore or",
+    "media boot",
+    "conf. int1",
+    "conf. int2",
+    "conf. abc1",
+    "conf. abc2"),
+    col = c("red",
+            "blue",
+            "green",
+            "green",
+            "pink",
+            "pink"),
+        lty = c(1,1,1,1,1,1),
+        lwd = c(3,3,3,3,3,3),
+        cex = 0.7)
+
